@@ -1,7 +1,7 @@
 # Reproducible Research: Peer Assessment 1
 
 
-This report is belongs to the first peer assessment of the MOOC Reproducable
+This report belongs to the first peer assessment of the MOOC Reproducable
 Research which is held by
 [Johns Hopkins Bloomberg School of Public Health](http://www.jhsph.edu/)
 and delivered via [Coursera Inc.](https://www.coursera.org/).
@@ -61,7 +61,7 @@ summary(activities)
 
 
 The following plot shows a histogram of the total number of steps taken each
-day.
+day. NAs are being ignored.
 
 
 ```r
@@ -82,7 +82,7 @@ The mean total number of steps taken per day is
 To illustrate the average daily activity pattern the dataset is reshaped into
 a dataset with two columns with one column containing the 5-minute interval and
 the other column containing the mean of all steps taken in this 5-minute
-interval across all days.
+interval across all days. NAs are being ignored.
 
 
 ```r

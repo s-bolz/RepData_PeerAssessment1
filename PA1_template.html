@@ -189,7 +189,7 @@ hr {
 <body>
 <h1>Reproducible Research: Peer Assessment 1</h1>
 
-<p>This report is belongs to the first peer assessment of the MOOC Reproducable
+<p>This report belongs to the first peer assessment of the MOOC Reproducable
 Research which is held by
 <a href="http://www.jhsph.edu/">Johns Hopkins Bloomberg School of Public Health</a>
 and delivered via <a href="https://www.coursera.org/">Coursera Inc.</a>.</p>
@@ -237,7 +237,7 @@ summary(activities)
 <h2>What is mean total number of steps taken per day?</h2>
 
 <p>The following plot shows a histogram of the total number of steps taken each
-day.</p>
+day. NAs are being ignored.</p>
 
 <pre><code class="r">stepsPerDay &lt;- tapply(activities$steps, activities$date, sum)
 hist(stepsPerDay)
@@ -254,7 +254,7 @@ hist(stepsPerDay)
 <p>To illustrate the average daily activity pattern the dataset is reshaped into
 a dataset with two columns with one column containing the 5-minute interval and
 the other column containing the mean of all steps taken in this 5-minute
-interval across all days.</p>
+interval across all days. NAs are being ignored.</p>
 
 <pre><code class="r">library(reshape2)
 activityMelt &lt;- melt (
