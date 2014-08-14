@@ -50,9 +50,24 @@ stepsPerDay <- tapply(activities$steps, activities$date, sum)
 hist(stepsPerDay)
 ```
 
-The mean total number of steps taken per day is
-**`r round(mean(stepsPerDay, na.rm = TRUE), 2)`**, the median is
-**`r median(stepsPerDay, na.rm = TRUE)`**.
+The mean and median total number of steps taken per day is calculated as
+follows.
+
+```{r results="asis"}
+library(xtable)
+averages <- data.frame (
+    Type = c (
+        "mean",
+        "median"
+    ),
+    Value = c (
+        round(mean(stepsPerDay, na.rm = TRUE), 2),
+        median(stepsPerDay, na.rm = TRUE)
+    )
+)
+xtAverages <- xtable(averages)
+print(xtAverages, type = "html")
+```
 
 
 ## What is the average daily activity pattern?
@@ -84,12 +99,101 @@ The following figure is a time series plot of the reshaped data set.
 plot(means, type = "l")
 ```
 
+```{r}
+maxMean <- which.max(means$steps)
+maxMeanInterval <- means[maxMean, "interval"]
+maxMeanInterval
+```
+
 On average the maximum number of steps (`r round(max(means$steps))`) is taken
-during the **`r means[which.max(means$steps), "interval"]`th** 5-minute interval.
+during the **`r maxMeanInterval`th** 5-minute interval.
 
 
 ## Imputing missing values
 
+
+The source dataset contains several rows with missing values.
+
+```{r results="asis"}
+nas <- data.frame (
+    Field.Name = c (
+        "steps",
+        "date",
+        "interval"
+    ),
+    NA.Count = c (
+        sum(is.na(activities$steps)),
+        sum(is.na(activities$date)),
+        sum(is.na(activities$interval))
+    )
+)
+xtNas <- xtable(nas)
+print(xtNas, type = "html")
+```
+
+Only the steps field contains missing values. These will be be imputed with the
+mean for that particular 5-minute interval across all rows without NAs. The
+source code for that transformation is based on a [Stackoverflow post](http://stackoverflow.com/questions/9322773/how-to-replace-na-with-mean-by-subset-in-r-impute-with-plyr).
+
+```{r}
+library(plyr)
+impute.mean <- function(x) {
+    replace(x, is.na(x), mean(x, na.rm = TRUE))
+}
+imputedActivities <- ddply (
+    activities,
+    ~ interval,
+    transform,
+    steps = impute.mean(steps)
+)
+summary(imputedActivities)
+```
+
+In order to analyze the effect of the imputation the following figure shows a
+comparison of histograms of the total number of steps taken each day for the
+original and the imputed datasets.
+
+```{r}
+stepsPerDayImputed <- tapply(imputedActivities$steps, imputedActivities$date, sum)
+par(mfcol = c(1, 2))
+hist (
+    stepsPerDay,
+    main = "Original data",
+    xlab = "steps per day",
+    ylim = c(0, 35)
+)
+hist (
+    stepsPerDayImputed,
+    main = "Imputed data",
+    xlab = "steps per day",
+    ylim = c(0, 35)
+)
+```
+
+Both plots look quite simmilar, except the middle chunk which has a higher
+frequency for the imputed dataset. The mean and median total number of steps
+taken per day for the imputed dataset is calculated and compared to the
+averages of the original dataset as follows.
+
+```{r results="asis"}
+averagesImputed <- data.frame (
+    Type = c (
+        "mean",
+        "median"
+    ),
+    Value.Original = averages$Value,
+    Value.Imputed = c (
+        round(mean(stepsPerDayImputed, na.rm = TRUE), 2),
+        median(stepsPerDayImputed, na.rm = TRUE)
+    )
+)
+xtAveragesImputed <- xtable(averagesImputed)
+print(xtAveragesImputed, type = "html")
+```
+
+Whereas the mean is the same for both datasets, the median for the imputed
+dataset is higher than the median for the original dataset, in fact it
+happens to be the same as the mean.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
