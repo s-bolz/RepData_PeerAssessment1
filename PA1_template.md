@@ -83,7 +83,7 @@ averages <- data.frame (
         "median"
     ),
     Value = c (
-        round(mean(stepsPerDay, na.rm = TRUE), 2),
+        mean(stepsPerDay, na.rm = TRUE),
         median(stepsPerDay, na.rm = TRUE)
     )
 )
@@ -92,7 +92,7 @@ print(xtAverages, type = "html")
 ```
 
 <!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
-<!-- Thu Aug 14 18:23:29 2014 -->
+<!-- Fri Aug 15 17:38:05 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Type </TH> <TH> Value </TH>  </TR>
   <TR> <TD align="right"> 1 </TD> <TD> mean </TD> <TD align="right"> 10766.19 </TD> </TR>
@@ -172,7 +172,7 @@ print(xtNas, type = "html")
 ```
 
 <!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
-<!-- Thu Aug 14 18:23:29 2014 -->
+<!-- Fri Aug 15 17:38:05 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Field.Name </TH> <TH> NA.Count </TH>  </TR>
   <TR> <TD align="right"> 1 </TD> <TD> steps </TD> <TD align="right"> 2304 </TD> </TR>
@@ -220,13 +220,13 @@ par(mfcol = c(1, 2))
 hist (
     stepsPerDay,
     main = "Original data",
-    xlab = "steps per day",
+    xlab = "Steps per Day",
     ylim = c(0, 35)
 )
 hist (
     stepsPerDayImputed,
     main = "Imputed data",
-    xlab = "steps per day",
+    xlab = "Steps per Day",
     ylim = c(0, 35)
 )
 ```
@@ -234,7 +234,7 @@ hist (
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
 
 Both plots look quite simmilar, except the middle chunk which has a higher
-frequency for the imputed dataset. The mean and median total number of steps
+frequency in the imputed dataset. The mean and median total number of steps
 taken per day for the imputed dataset is calculated and compared to the
 averages of the original dataset as follows.
 
@@ -247,7 +247,7 @@ averagesImputed <- data.frame (
     ),
     Value.Original = averages$Value,
     Value.Imputed = c (
-        round(mean(stepsPerDayImputed, na.rm = TRUE), 2),
+        mean(stepsPerDayImputed, na.rm = TRUE),
         median(stepsPerDayImputed, na.rm = TRUE)
     )
 )
@@ -256,7 +256,7 @@ print(xtAveragesImputed, type = "html")
 ```
 
 <!-- html table generated in R 3.0.3 by xtable 1.7-3 package -->
-<!-- Thu Aug 14 18:23:30 2014 -->
+<!-- Fri Aug 15 17:38:05 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Type </TH> <TH> Value.Original </TH> <TH> Value.Imputed </TH>  </TR>
   <TR> <TD align="right"> 1 </TD> <TD> mean </TD> <TD align="right"> 10766.19 </TD> <TD align="right"> 10766.19 </TD> </TR>
@@ -269,3 +269,59 @@ happens to be the same as the mean.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+In order to make date functions (like weekdays()) return the same values
+regardless of the locality they are called in the locale is set to en_US.UTF-8.
+
+
+```r
+Sys.setlocale("LC_ALL", "en_US.UTF-8")
+```
+
+```
+## [1] "en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/de_DE.UTF-8"
+```
+
+Now a new factor variable typeOfDay can be created in the imputed dataset. It
+contains two levels: weekday and weekend.
+
+
+```r
+imputedActivities$typeOfDay <- sapply (
+    X   = imputedActivities$date,
+    FUN = function(x) {
+        if (weekdays(x, abbreviate = TRUE) %in% c("Sat", "Sun"))
+            "weekend"
+        else
+            "weekday"
+    }
+)
+imputedActivities$typeOfDay <- as.factor(imputedActivities$typeOfDay)
+str(imputedActivities)
+```
+
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps    : num  1.72 0 0 47 0 ...
+##  $ date     : Date, format: "2012-10-01" "2012-10-02" ...
+##  $ interval : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ typeOfDay: Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 2 2 1 1 1 ...
+```
+
+The following figure displays two time series plots of the 5-minute interval and
+the mean number of steps averaged across the type of day.
+
+
+```r
+library(ggplot2)
+meansPerIntervalAndTypeOfDay <- aggregate (
+    formula = steps ~ interval + typeOfDay,
+    data    = imputedActivities,
+    FUN     = mean
+)
+g <- ggplot(meansPerIntervalAndTypeOfDay) + aes(interval, steps) + geom_line()
+g <- g + facet_grid(typeOfDay ~ .) + xlab("Interval") + ylab("Number of Steps")
+print(g)
+```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14.png) 
